@@ -1,17 +1,21 @@
+# Usar Debian como base
 FROM debian:latest
 
-# Instalar dependencias y actualizar
+# Actualizar el sistema y descargar dependencias
 RUN apt-get update && apt-get install -y curl sudo
 
 # Instalar PufferPanel
-RUN curl -fsSL https://download.pufferpanel.com/install.sh | bash
+RUN curl -s https://packagecloud.io/install/repositories/pufferpanel/pufferpanel/script.deb.sh | bash && \
+    apt-get install -y pufferpanel
+
+# Hacer que PufferPanel se inicie automáticamente
+RUN pufferpanel install
 
 # Exponer el puerto 8080 para la interfaz web
 EXPOSE 8080
 
-# Agregar script de inicio para crear el usuario
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
-
-# Ejecutar el script al iniciar el contenedor
-CMD ["/entrypoint.sh"]
+# Comando para iniciar PufferPanel y crear el usuario automáticamente
+CMD pufferpanel run & \
+    sleep 5 && \
+    pufferpanel user add --email renderpufferpanel@gmail.com --name renderpufferpanel --password renderpufferpanel12345 --admin && \
+    wait
